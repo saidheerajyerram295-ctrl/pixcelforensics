@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BUGBOOTH – Debug the Code</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #0f172a;
+            color: white;
+            text-align: center;
+        }
+        .question {
+            margin: 20px;
+            padding: 15px;
+            background: #1e293b;
+            border-radius: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            margin-top: 20px;
+            background: #22c55e;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>🐞 BUGBOOTH – Debug the Code 🐞</h1>
+<p>⏱ Time: 15–20 Minutes | ❌ No Internet Search | ❌ No Mobile Phones | ✅ Debug Only</p>
+
+<form id="quizForm">
+
+    <!-- LEVEL 1 -->
+    <div class="question">
+        <p>Level 1</p>
+        <input type="radio" name="level1" value="1"> Option 1<br>
+        <input type="radio" name="level1" value="2"> Option 2<br>
+    </div>
+
+    <!-- LEVEL 2 -->
+    <div class="question">
+        <p>Level 2</p>
+        <input type="radio" name="level2" value="1"> Option 1<br>
+        <input type="radio" name="level2" value="2"> Option 2<br>
+    </div>
+
+    <!-- LEVEL 3 -->
+    <div class="question">
+        <p>Level 3</p>
+        <input type="radio" name="level3" value="1"> Option 1<br>
+        <input type="radio" name="level3" value="2"> Option 2<br>
+    </div>
+
+    <!-- LEVEL 4 -->
+    <div class="question">
+        <p>Level 4</p>
+        <input type="radio" name="level4" value="1"> Option 1<br>
+        <input type="radio" name="level4" value="2"> Option 2<br>
+    </div>
+
+    <!-- LEVEL 5 -->
+    <div class="question">
+        <p>Level 5</p>
+        <input type="radio" name="level5" value="1"> Option 1<br>
+        <input type="radio" name="level5" value="2"> Option 2<br>
+    </div>
+
+    <!-- LEVEL 6 -->
+    <div class="question">
+        <p>Level 6</p>
+        <input type="radio" name="level6" value="1"> Option 1<br>
+        <input type="radio" name="level6" value="2"> Option 2<br>
+    </div>
+
+    <!-- LEVEL 7 -->
+    <div class="question">
+        <p>Level 7</p>
+        <input type="radio" name="level7" value="1"> Option 1<br>
+        <input type="radio" name="level7" value="2"> Option 2<br>
+    </div>
+
+    <!-- LEVEL 8 -->
+    <div class="question">
+        <p>Level 8</p>
+        <input type="radio" name="level8" value="1"> Option 1<br>
+        <input type="radio" name="level8" value="2"> Option 2<br>
+    </div>
+
+    <!-- LEVEL 9 -->
+    <div class="question">
+        <p>Level 9</p>
+        <input type="radio" name="level9" value="1"> Option 1<br>
+        <input type="radio" name="level9" value="2"> Option 2<br>
+    </div>
+
+    <button type="button" onclick="checkAnswers()">Submit</button>
+
+</form>
+
+<script>
+function checkAnswers() {
+
+    let score = 0;
+
+    if(document.querySelector('input[name="level1"]:checked')?.value == "2") score++;
+    if(document.querySelector('input[name="level2"]:checked')?.value == "2") score++;
+    if(document.querySelector('input[name="level3"]:checked')?.value == "1") score++;
+    if(document.querySelector('input[name="level4"]:checked')?.value == "2") score++;
+    if(document.querySelector('input[name="level5"]:checked')?.value == "1") score++;
+    if(document.querySelector('input[name="level6"]:checked')?.value == "1") score++;
+    if(document.querySelector('input[name="level7"]:checked')?.value == "2") score++;
+    if(document.querySelector('input[name="level8"]:checked')?.value == "1") score++;
+    if(document.querySelector('input[name="level9"]:checked')?.value == "1") score++;
+
+    alert("Your Score: " + score + " / 9");
+
+}
+</script>
+
+</body>
+</html>
