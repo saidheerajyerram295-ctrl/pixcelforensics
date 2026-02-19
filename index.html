@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pixel Forensics</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  margin:0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: radial-gradient(circle at top, #0f2027, #000);
+  color:#e0f7fa;
+  text-align:center;
+}
+.hidden{display:none;}
+.container{padding:30px;}
+.card{
+  background:#0f1623;
+  padding:30px;
+  border-radius:16px;
+  max-width:1100px;
+  margin:auto;
+  box-shadow:0 0 30px rgba(0,229,255,.25);
+}
+h1{color:#00e5ff;letter-spacing:2px;}
+.timer{color:#ff5252;font-size:20px;margin-bottom:10px;}
+.level{color:#aaa;margin-bottom:10px;}
+.question{font-size:20px;margin-bottom:20px;}
+.grid{
+  display:flex;
+  gap:20px;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+.grid img, .grid video{
+  width:30%;
+  border-radius:14px;
+  cursor:pointer;
+  border:3px solid transparent;
+  transition:.25s;
+}
+.grid img:hover, .grid video:hover{
+  transform:scale(1.03);
+}
+#feedback{margin-top:15px;font-size:18px;}
+button{
+  margin-top:15px;
+  padding:10px 30px;
+  border:none;
+  border-radius:25px;
+  background:#00e5ff;
+  font-size:16px;
+  cursor:pointer;
+}
+button:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container" id="start">
+  <h1>PIXEL FORENSICS</h1>
+  <p>Trust the Pixels • Detect the Truth</p>
+  <button onclick="startGame()">START</button>
+</div>
+
+<div class="container hidden" id="game">
+  <div class="card">
+    <div class="timer" id="timer">Time Left: 10:00</div>
+    <div class="level" id="levelText"></div>
+    <div class="question" id="question"></div>
+    <div class="grid" id="media"></div>
+    <div id="feedback"></div>
+    <button id="okBtn" onclick="confirmAnswer()" class="hidden">OK</button>
+  </div>
+</div>
+
+<div class="container hidden" id="final">
+  <div class="card">
+    <h2>CASE CLOSED</h2>
+    <div id="result"></div>
+  </div>
+</div>
+
+<script>
+let time = 600;
+let level = 0;
+let score = 0;
+let correctCount = 0;
+let wrongCount = 0;
+let timerInt;
+let locked = false;
+let selectedIndexes = [];
+
+const TOTAL_QUESTIONS = 15;
+
+/* ✅ YOUR EXACT CORRECT ANSWERS ADDED */
+const levels = [
+  {type:"img", q:"Find the fake image", correct:[1]},
+  {type:"img", q:"Identify the non-original image", correct:[1]},
+  {type:"img", q:"Which image is AI-generated?", correct:[1]},
+  {type:"img", q:"Find the manipulated image", correct:[1]},
+
+  {type:"img", q:"Detect the fake image", correct:[1]},
+  {type:"img", q:"Which image is not real?", correct:[1]},
+  {type:"img", q:"AI vs Real – find fake", correct:[1]},
+  {type:"img", q:"Spot the manipulation", correct:[1]},
+
+  {type:"img", q:"Find the fake images", correct:[1,2]},
+  {type:"img", q:"Identify non-original images", correct:[1,2]},
+  {type:"img", q:"Which images are not real?", correct:[1,2]},
+  {type:"img", q:"Detect AI-generated images", correct:[1,2]},
+  {type:"img", q:"Extreme level – find the fake images", correct:[1,2]},
+
+  {type:"vid", q:"Identify the ORIGINAL video", correct:1},
+  {type:"vid", q:"Which video is NOT AI-generated?", correct:1}
+];
+
+function startGame(){
+  document.getElementById("start").classList.add("hidden");
+  document.getElementById("game").classList.remove("hidden");
+  startTimer();
+  loadLevel();
+}
+
+function startTimer(){
+  timerInt = setInterval(()=>{
+    time--;
+    let m = Math.floor(time/60);
+    let s = time % 60;
+    document.getElementById("timer").innerText =
+      `Time Left: ${m}:${s<10?"0"+s:s}`;
+    if(time <= 0) endGame();
+  },1000);
+}
+
+function loadLevel(){
+  locked = false;
+  selectedIndexes = [];
+  document.getElementById("feedback").innerText = "";
+  document.getElementById("okBtn").classList.add("hidden");
+
+  const media = document.getElementById("media");
+  media.innerHTML = "";
+
+  document.getElementById("levelText").innerText =
+    `QUESTION ${level+1} / 15`;
+  document.getElementById("question").innerText =
+    levels[level].q;
+
+  if(levels[level].type === "img"){
+    let count = (level < 8) ? 2 : 3;
+    for(let i=0;i<count;i++){
+      let img = document.createElement("img");
+      img.src = `level${level+1}_${i+1}.jpg`;
+      img.onclick = ()=>selectImage(i);
+      media.appendChild(img);
+    }
+  } else {
+    for(let i=0;i<2;i++){
+      let v = document.createElement("video");
+      v.src = `video${level-12}_${i+1}.mp4`;
+      v.muted = true;
+      v.loop = true;
+      v.autoplay = true;
+      v.onclick = ()=>selectVideo(i);
+      media.appendChild(v);
+    }
+  }
+}
+
+function selectImage(index){
+  if(locked) return;
+
+  const items = Array.from(document.getElementById("media").children);
+  const correct = levels[level].correct;
+
+  if(level >= 8 && level <= 12){
+
+    if(selectedIndexes.includes(index)){
+      items[index].style.borderColor="transparent";
+      selectedIndexes = selectedIndexes.filter(i=>i!==index);
+    } else {
+      items[index].style.borderColor="#00e5ff";
+      selectedIndexes.push(index);
+    }
+
+    if(selectedIndexes.length === 2){
+      locked = true;
+
+      let isCorrect =
+        selectedIndexes.length === correct.length &&
+        selectedIndexes.every(i => correct.includes(i));
+
+      correct.forEach(i=>{
+        items[i].style.borderColor="#00ff99";
+      });
+
+      if(isCorrect){
+        score++;
+        correctCount++;
+        document.getElementById("feedback").innerText="✅ Correct Answer";
+        document.getElementById("feedback").style.color="#00ff99";
+      } else {
+        selectedIndexes.forEach(i=>{
+          if(!correct.includes(i))
+            items[i].style.borderColor="#ff5252";
+        });
+        wrongCount++;
+        document.getElementById("feedback").innerText="❌ Wrong Answer";
+        document.getElementById("feedback").style.color="#ff5252";
+      }
+
+      document.getElementById("okBtn").classList.remove("hidden");
+    }
+
+  } else {
+    locked = true;
+
+    items.forEach((el,i)=>{
+      el.style.pointerEvents="none";
+      if(correct.includes(i)){
+        el.style.borderColor="#00ff99";
+      }
+    });
+
+    if(correct.includes(index)){
+      score++;
+      correctCount++;
+      document.getElementById("feedback").innerText="✅ Correct Answer";
+      document.getElementById("feedback").style.color="#00ff99";
+    } else {
+      items[index].style.borderColor="#ff5252";
+      wrongCount++;
+      document.getElementById("feedback").innerText="❌ Wrong Answer";
+      document.getElementById("feedback").style.color="#ff5252";
+    }
+
+    document.getElementById("okBtn").classList.remove("hidden");
+  }
+}
+
+function selectVideo(index){
+  if(locked) return;
+  locked = true;
+
+  const items = Array.from(document.getElementById("media").children);
+  const correct = levels[level].correct;
+
+  items.forEach((el,i)=>{
+    el.style.pointerEvents="none";
+    if(i === correct){
+      el.style.borderColor="#00ff99";
+    }
+  });
+
+  if(index === correct){
+    score++;
+    correctCount++;
+    document.getElementById("feedback").innerText="✅ Correct Answer";
+    document.getElementById("feedback").style.color="#00ff99";
+  } else {
+    items[index].style.borderColor="#ff5252";
+    wrongCount++;
+    document.getElementById("feedback").innerText="❌ Wrong Answer";
+    document.getElementById("feedback").style.color="#ff5252";
+  }
+
+  document.getElementById("okBtn").classList.remove("hidden");
+}
+
+function confirmAnswer(){
+  level++;
+  if(level < TOTAL_QUESTIONS){
+    loadLevel();
+  } else {
+    endGame();
+  }
+}
+
+function endGame(){
+  clearInterval(timerInt);
+  document.getElementById("game").classList.add("hidden");
+  document.getElementById("final").classList.remove("hidden");
+
+  let accuracy = Math.round((score / TOTAL_QUESTIONS) * 100);
+  let brain = "";
+
+  if(accuracy >= 90) brain = "🧠 ELITE FORENSIC BRAIN";
+  else if(accuracy >= 80) brain = "🔥 ADVANCED ANALYST";
+  else if(accuracy >= 70) brain = "⚡ SKILLED INVESTIGATOR";
+  else if(accuracy >= 60) brain = "✅ GOOD OBSERVER";
+  else brain = "🧪 NEEDS TRAINING";
+
+  document.getElementById("result").innerHTML = `
+    <h3>Final Score: ${score} / 15</h3>
+    <p>Correct: ${correctCount}</p>
+    <p>Wrong: ${wrongCount}</p>
+    <p>Accuracy: ${accuracy}%</p>
+    <h2>${brain}</h2>
+  `;
+}
+</script>
+
+</body>
+</html>
